@@ -1,6 +1,7 @@
 /* globals $ */
 
 import { remote, ipcRenderer } from 'electron';
+import i18n from '../i18n/index.js';
 import servers from './servers';
 import sidebar from './sidebar';
 import webview from './webview';
@@ -8,7 +9,7 @@ import tray from './tray';
 import './menus';
 
 sidebar.on('badge-setted', function () {
-    var badge = sidebar.getGlobalBadge();
+    const badge = sidebar.getGlobalBadge();
 
     if (process.platform === 'darwin') {
         remote.app.dock.setBadge(badge);
@@ -16,8 +17,8 @@ sidebar.on('badge-setted', function () {
     tray.showTrayAlert(!isNaN(parseInt(badge)) && badge > 0, badge);
 });
 
-export var start = function () {
-    var defaultInstance = 'https://demo.rocket.chat';
+export const start = function () {
+    const defaultInstance = 'https://open.rocket.chat';
 
     // connection check
     function online () {
@@ -35,10 +36,10 @@ export var start = function () {
     window.addEventListener('offline', offline);
     // end connection check
 
-    var form = document.querySelector('form');
-    var hostField = form.querySelector('[name="host"]');
-    var button = form.querySelector('[type="submit"]');
-    var invalidUrl = form.querySelector('#invalidUrl');
+    const form = document.querySelector('form');
+    const hostField = form.querySelector('[name="host"]');
+    const button = form.querySelector('[type="submit"]');
+    const invalidUrl = form.querySelector('#invalidUrl');
 
     window.addEventListener('load', function () {
         hostField.focus();
@@ -46,42 +47,42 @@ export var start = function () {
 
     function validateHost () {
         return new Promise(function (resolve, reject) {
-            var execValidation = function () {
+            const execValidation = function () {
                 invalidUrl.style.display = 'none';
                 hostField.classList.remove('wrong');
 
-                var host = hostField.value.trim();
+                let host = hostField.value.trim();
                 host = host.replace(/\/$/, '');
                 hostField.value = host;
 
                 if (host.length === 0) {
-                    button.value = 'Connect';
+                    button.value = i18n.__('Connect');
                     button.disabled = false;
                     resolve();
                     return;
                 }
 
-                button.value = 'Validating...';
+                button.value = i18n.__('Validating');
                 button.disabled = true;
 
                 servers.validateHost(host, 2000).then(function () {
-                    button.value = 'Connect';
+                    button.value = i18n.__('Connect');
                     button.disabled = false;
                     resolve();
                 }, function (status) {
                     // If the url begins with HTTP, mark as invalid
                     if (/^https?:\/\/.+/.test(host) || status === 'basic-auth') {
-                        button.value = 'Invalid url';
+                        button.value = i18n.__('Invalid_url');
                         invalidUrl.style.display = 'block';
                         switch (status) {
                             case 'basic-auth':
-                                invalidUrl.innerHTML = 'Auth needed, try <b>username:password@host</b>';
+                                invalidUrl.innerHTML = i18n.__('Auth_needed_try', '<b>username:password@host</b>');
                                 break;
                             case 'invalid':
-                                invalidUrl.innerHTML = 'No valid server found at the URL';
+                                invalidUrl.innerHTML = i18n.__('No_valid_server_found');
                                 break;
                             case 'timeout':
-                                invalidUrl.innerHTML = 'Timeout trying to connect';
+                                invalidUrl.innerHTML = i18n.__('Timeout_trying_to_connect');
                                 break;
                         }
                         hostField.classList.add('wrong');
@@ -122,10 +123,10 @@ export var start = function () {
         validateHost().then(function () {}, function () {});
     });
 
-    var submit = function () {
+    const submit = function () {
         validateHost().then(function () {
-            var input = form.querySelector('[name="host"]');
-            var url = input.value;
+            const input = form.querySelector('[name="host"]');
+            let url = input.value;
 
             if (url.length === 0) {
                 url = defaultInstance;
@@ -158,8 +159,8 @@ export var start = function () {
     });
 
     $('.add-server').on('click', function () {
-        webview.loaded();
         servers.clearActive();
+        webview.showLanding();
     });
 
     servers.restoreActive();

@@ -1,42 +1,43 @@
 // This gives you default context menu (cut, copy, paste)
 // in all input fields and textareas across your app.
+const i18n = require('../../i18n');
 
 (function () {
     'use strict';
 
-    var remote = require('electron').remote;
-    var Menu = remote.Menu;
-    var MenuItem = remote.MenuItem;
+    const remote = require('electron').remote;
+    const Menu = remote.Menu;
+    const MenuItem = remote.MenuItem;
 
-    var isAnyTextSelected = function () {
+    const isAnyTextSelected = function () {
         return window.getSelection().toString() !== '';
     };
 
-    var cut = new MenuItem({
-        label: "Cut",
+    const cut = new MenuItem({
+        label: i18n.__('Cut'),
         click: function () {
             document.execCommand("cut");
         }
     });
 
-    var copy = new MenuItem({
-        label: "Copy",
+    const copy = new MenuItem({
+        label: i18n.__('Copy'),
         click: function () {
             document.execCommand("copy");
         }
     });
 
-    var paste = new MenuItem({
-        label: "Paste",
+    const paste = new MenuItem({
+        label: i18n.__('Paste'),
         click: function () {
             document.execCommand("paste");
         }
     });
 
-    var normalMenu = new Menu();
+    const normalMenu = new Menu();
     normalMenu.append(copy);
 
-    var textEditingMenu = new Menu();
+    const textEditingMenu = new Menu();
     textEditingMenu.append(cut);
     textEditingMenu.append(copy);
     textEditingMenu.append(paste);

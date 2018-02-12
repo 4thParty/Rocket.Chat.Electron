@@ -1,12 +1,13 @@
 const os = require('os');
 const checker = require('spellchecker');
-const { remote, webFrame } = require('electron');
+const { remote, webFrame, shell } = require('electron');
+const i18n = require('../../i18n/index');
 
 const webContents = remote.getCurrentWebContents();
 let menu = new remote.Menu();
 
 const path = remote.require('path');
-const isWindows = ['win32', 'win64'].indexOf(os.platform());
+const isWindows = ['win32', 'win64'].indexOf(os.platform()) !== -1;
 
 class SpellCheck {
 
@@ -34,7 +35,7 @@ class SpellCheck {
         this.setEnabledDictionaries();
 
         this.languagesMenu = {
-            label: 'Spelling languages',
+            label: i18n.__('Spelling_languages'),
             submenu: this.availableDictionaries.map((dictionary) => {
                 const menu = {
                     label: dictionary,
@@ -43,7 +44,7 @@ class SpellCheck {
                     click: (menuItem) => {
                         menu.checked = menuItem.checked;
                         // If not using os dictionary then limit to only 1 language
-                        if (!this.muliLanguage) {
+                        if (!this.multiLanguage) {
                             this.languagesMenu.submenu.forEach((m) => {
                                 if (m.label !== menuItem.label) {
                                     m.checked = false;
@@ -84,17 +85,17 @@ class SpellCheck {
             if (this.setEnabled(this.userLanguage)) {
                 return;
             }
-            if (this.userLanguage.split('_') !== -1 && this.setEnabled(this.userLanguage.split('_')[0])) {
+            if (this.userLanguage.includes('_') && this.setEnabled(this.userLanguage.split('_')[0])) {
                 return;
             }
         }
 
-        let navigatorLanguage = navigator.language.replace('-', '_');
+        const navigatorLanguage = navigator.language.replace('-', '_');
         if (this.setEnabled(navigatorLanguage)) {
             return;
         }
 
-        if (navigatorLanguage.split('_') !== -1 && this.setEnabled(this.navigatorLanguage.split('_')[0])) {
+        if (navigatorLanguage.includes('_') && this.setEnabled(navigatorLanguage.split('_')[0])) {
             return;
         }
 
@@ -103,7 +104,7 @@ class SpellCheck {
         }
 
         if (!this.setEnabled('en')) {
-            console.log('Unable to set a language for the spell checker - Spell checker is disabled');
+            console.info('Unable to set a language for the spell checker - Spell checker is disabled');
         }
 
     }
@@ -111,7 +112,7 @@ class SpellCheck {
     loadAvailableDictionaries () {
         this.availableDictionaries = checker.getAvailableDictionaries().sort();
         if (this.availableDictionaries.length === 0) {
-            this.muliLanguage = false;
+            this.multiLanguage = false;
             // Dictionaries path is correct for build
             this.dictionariesPath = path.join(remote.app.getAppPath(), '../dictionaries');
             this.availableDictionaries = [
@@ -121,7 +122,7 @@ class SpellCheck {
                 'pt_BR'
             ];
         } else {
-            this.muliLanguage = !isWindows;
+            this.multiLanguage = !isWindows;
             this.availableDictionaries = this.availableDictionaries.map((dict) => dict.replace('-', '_'));
         }
     }
@@ -134,7 +135,7 @@ class SpellCheck {
                 result = true;
                 this.enabledDictionaries.push(dictionaries[i]);
                 // If using Hunspell or Windows then only allow 1 language for performance reasons
-                if (!this.muliLanguage) {
+                if (!this.multiLanguage) {
                     this.enabledDictionaries = [dictionaries[i]];
                     checker.setDictionary(dictionaries[i], this.dictionariesPath);
                     return true;
@@ -183,33 +184,33 @@ class SpellCheck {
     getMenu () {
         return [
             {
-                label: 'Undo',
+                label: i18n.__('Undo'),
                 role: 'undo'
             },
             {
-                label: 'Redo',
+                label: i18n.__('Redo'),
                 role: 'redo'
             },
             {
                 type: 'separator'
             },
             {
-                label: 'Cut',
+                label: i18n.__('Cut'),
                 role: 'cut',
                 accelerator: 'CommandOrControl+X',
             },
             {
-                label: 'Copy',
+                label: i18n.__('Copy'),
                 role: 'copy',
                 accelerator: 'CommandOrControl+C',
             },
             {
-                label: 'Paste',
+                label: i18n.__('Paste'),
                 role: 'paste',
                 accelerator: 'CommandOrControl+V',
             },
             {
-                label: 'Select All',
+                label: i18n.__('Select_All'),
                 role: 'selectall',
                 accelerator: 'CommandOrControl+A',
             }
@@ -225,7 +226,7 @@ class SpellCheck {
             return true;
         }
 
-        if (this.muliLanguage) {
+        if (this.multiLanguage) {
             for (let i = 0; i < this.enabledDictionaries.length; i++) {
                 checker.setDictionary(this.enabledDictionaries[i]);
                 if (!checker.isMisspelled(text)) {
@@ -239,7 +240,7 @@ class SpellCheck {
     }
 
     getCorrections (text) {
-        if (!this.muliLanguage) {
+        if (!this.multiLanguage) {
             return checker.getCorrectionsForMisspelling(text);
         }
 
@@ -272,6 +273,17 @@ class SpellCheck {
             }
 
             setTimeout(() => {
+                if (event.target.nodeName === 'A') {
+                    const targetLink = event.target.href;
+
+                    template.unshift({
+                        label: i18n.__('Open_Link'),
+                        click: () => {
+                            shell.openExternal(targetLink);
+                        }
+                    });
+                }
+
                 if (['TEXTAREA', 'INPUT'].indexOf(event.target.nodeName) > -1) {
                     const text = window.getSelection().toString().trim();
                     if (text !== '' && !this.isCorrect(text)) {
@@ -293,7 +305,7 @@ class SpellCheck {
 
                             if (suggestions.length > maxItems) {
                                 const moreSuggestions = {
-                                    label: 'More spelling suggestions',
+                                    label: i18n.__('More_spelling_suggestions'),
                                     submenu: suggestions.slice(maxItems)
                                 };
                                 template.unshift(moreSuggestions);
@@ -301,7 +313,7 @@ class SpellCheck {
 
                             template.unshift.apply(template, suggestions.slice(0, maxItems));
                         } else {
-                            template.unshift({ label: 'No suggestions', enabled: false });
+                            template.unshift({ label: i18n.__('No_suggestions'), enabled: false });
                         }
                     }
                 }

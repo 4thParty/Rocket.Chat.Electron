@@ -8,16 +8,16 @@ import _ from 'lodash';
 
 export default function (name, defaults) {
 
-    var userDataDir = jetpack.cwd(app.getPath('userData'));
-    var stateStoreFile = 'window-state-' + name +'.json';
-    var state = {
+    const userDataDir = jetpack.cwd(app.getPath('userData'));
+    const stateStoreFile = `window-state-${name}.json`;
+    let state = {
         width: defaults.width,
         height: defaults.height
     };
 
     try {
-        var loadedState = userDataDir.read(stateStoreFile, 'json');
-        if (loadedState != null) {
+        const loadedState = userDataDir.read(stateStoreFile, 'json');
+        if (loadedState) {
             state = loadedState;
         }
     } catch (err) {
@@ -25,10 +25,10 @@ export default function (name, defaults) {
         // No worries, we have defaults.
     }
 
-    var saveState = function (win) {
+    const saveState = function (win) {
         if (!win.isMaximized() && !win.isMinimized() && win.isVisible()) {
-            var position = win.getPosition();
-            var size = win.getSize();
+            const position = win.getPosition();
+            const size = win.getSize();
             state.x = position[0];
             state.y = position[1];
             state.width = size[0];
@@ -41,10 +41,10 @@ export default function (name, defaults) {
     };
 
     return {
-        get x () { return state.x; },
-        get y () { return state.y; },
-        get width () { return state.width; },
-        get height () { return state.height; },
+        get x () { return state.x && Math.floor(state.x); },
+        get y () { return state.y && Math.floor(state.y); },
+        get width () { return state.width && Math.floor(state.width); },
+        get height () { return state.height && Math.floor(state.height); },
         get isMaximized () { return state.isMaximized; },
         get isMinimized () { return state.isMinimized; },
         get isHidden () { return state.isHidden; },

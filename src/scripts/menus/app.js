@@ -1,61 +1,67 @@
 import { remote } from 'electron';
+import i18n from '../../i18n/index.js';
 
 const APP_NAME = remote.app.getName();
 const isMac = process.platform === 'darwin';
 
-const macAppTemplate = [
-    {
-        label: 'About ' + APP_NAME,
-        role: 'about'
-    },
-    {
-        type: 'separator'
-    },
-    {
-        label: 'Hide ' + APP_NAME,
-        accelerator: 'Command+H',
-        role: 'hide'
-    },
-    {
-        label: 'Hide Others',
-        accelerator: 'Command+Alt+H',
-        role: 'hideothers'
-    },
-    {
-        label: 'Show All',
-        role: 'unhide'
-    },
-    {
-        type: 'separator'
-    },
-    {
-        label: 'Quit ' + APP_NAME,
-        accelerator: 'Command+Q',
-        click: function () {
-            remote.app.quit();
-        }
-    }
-];
-
 const appTemplate = [
     {
-        label: 'About ' + APP_NAME,
+        label: i18n.__('About', APP_NAME),
         click: function () {
-            const win = new remote.BrowserWindow({ width: 310, height: 200, minWidth: 310, minHeight: 200, maxWidth: 310, maxHeight: 200, show: false, maximizable: false, minimizable: false, title: ' ' });
+            const win = new remote.BrowserWindow({
+                width: 310,
+                height: 240,
+                resizable: false,
+                show: false,
+                center: true,
+                maximizable: false,
+                minimizable: false,
+                title: 'About Rocket.Chat'
+            });
             win.loadURL('file://' + __dirname + '/about.html');
+            win.setMenuBarVisibility(false);
             win.show();
         }
     },
     {
-        type: 'separator'
+        type: 'separator',
+        id: 'about-sep'
     },
     {
-        label: 'Quit',
-        accelerator: 'Ctrl+Q',
+        label: i18n.__('Quit_App', APP_NAME),
+        accelerator: 'CommandOrControl+Q',
         click: function () {
             remote.app.quit();
         }
     }
 ];
 
-export default isMac ? macAppTemplate : appTemplate;
+if (isMac) {
+    const macAppExtraTemplate = [
+        {
+            role: 'services',
+            submenu: [],
+            position: 'after=about-sep'
+        },
+        {
+            type: 'separator'
+        },
+        {
+            accelerator: 'Command+H',
+            role: 'hide'
+        },
+        {
+            accelerator: 'Command+Alt+H',
+            role: 'hideothers'
+        },
+        {
+            role: 'unhide'
+        },
+        {
+            type: 'separator'
+        }
+    ];
+    appTemplate.push(...macAppExtraTemplate);
+}
+
+export default appTemplate;
