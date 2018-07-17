@@ -54,11 +54,13 @@
     },
     "linux": {
       "desktop": {
-        "Categories": "GNOME;GTK;Network;InstantMessaging",
         "StartupWMClass": "Rocket.Chat+",
         "MimeType": "x-scheme-handler/rocketchat"
       },
+      "category": "GNOME;GTK;Network;InstantMessaging",
       "target": [
+        "tar.gz",
+        "snap",
         "deb",
         "rpm"
       ]
