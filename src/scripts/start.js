@@ -10,25 +10,7 @@ import './menus';
 
 sidebar.on('badge-setted', function () {
     const badge = sidebar.getGlobalBadge();
-
-    if (process.platform === 'darwin' && badge.showAlert) {
-        remote.app.dock.setBadge(badge.count.toString());
-    }
-
-    if (process.platform === 'win32') {
-        const mainWindow = remote.getCurrentWindow();
-        if (badge.showAlert) {
-            if (!mainWindow.isFocused()) {
-                mainWindow.flashFrame(true);
-            }
-            mainWindow.webContents.send('render-taskbar-icon', badge.count);
-        } else {
-            mainWindow.setOverlayIcon(null, '');
-        }
-    }
-
     tray.showTrayAlert(badge);
-
 });
 
 export const start = function () {

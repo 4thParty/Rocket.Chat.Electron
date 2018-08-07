@@ -53,7 +53,6 @@ Build process is founded upon [gulp](https://github.com/gulpjs/gulp) task runner
 
 Remember to respect the split between `dependencies` and `devDependencies` in `package.json` file. Only modules listed in `dependencies` will be included into distributable app.
 
-Side note: If the module you want to use in your app is a native one (not pure JavaScript but compiled C code or something) you should first  run `yarn add name_of_module` and then `yarn postinstall` to rebuild the module for Electron. This needs to be done only once when you're first time installing the module. Later on postinstall script will fire automatically with every `yarn install`.
 
 ## Working with modules
 
@@ -156,22 +155,22 @@ You can bundle a `servers.json` with the install package, the file should be loc
 
 ## Post-Install Configuration
 
-If you can't (or don't want to) bundle the file inside the app, you can create a `servers.json` in the user preferences folder which will overwrite the packaged one. The file should be located in the `%APPDATA%/Rocket.Chat+/` folder or the installation folder in case of a installation for all users (Windows only).
+If you can't (or don't want to) bundle the file inside the app, you can create a `servers.json` in the user preferences folder which will overwrite the packaged one. The file should be located in the `%APPDATA%/Rocket.Chat/` folder or the installation folder in case of a installation for all users (Windows only).
 
 For Windows the full paths are:
 ```
-~\Users\<username>\AppData\Roaming\Rocket.Chat+\
-~\Program Files\Rocket.Chat+\Resources\
+~\Users\<username>\AppData\Roaming\Rocket.Chat\
+~\Program Files\Rocket.Chat\Resources\
 ```
 On MacOS the full path is:
-```		
-~/Users/<username>/Library/Application Support/Rocket.Chat+/
-~/Applications/Rocket.Chat+.app/Contents/Resources/
+```
+~/Users/<username>/Library/Application Support/Rocket.Chat/
+~/Applications/Rocket.Chat.app/Contents/Resources/
 ```
 On Linux the full path is:
 ```
-/home/<username>/.config/Rocket.Chat+/
-/opt/Rocket.Chat+/resources/
+/home/<username>/.config/Rocket.Chat/
+/opt/Rocket.Chat/resources/
 ```
 
 # Useful links
