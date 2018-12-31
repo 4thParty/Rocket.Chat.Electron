@@ -10,7 +10,6 @@
     "servers.json"
   ],
   "appId": "chat.rocket",
-  "afterPack": "./build/afterPack.js",
   "mac": {
     "category": "public.app-category.productivity",
     "target": [
@@ -20,10 +19,14 @@
       "mas"
     ],
     "icon": "build/icon.icns",
-    "bundleVersion": "43",
+    "bundleVersion": "45",
     "helperBundleId": "chat.rocket.electron.helper",
     "type": "distribution",
-    "artifactName": "rocketchat-${version}.${ext}"
+		"artifactName": "rocketchat-${version}.${ext}",
+		"extendInfo": {
+			"NSMicrophoneUsageDescription": "I need access to your microphone to record the audio you want to send.",
+			"NSCameraUsageDescription": "I need access to your camera to record the video you want to send."
+		}
   },
   "dmg": {
     "background": "build/background.png",

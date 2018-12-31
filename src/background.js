@@ -3,19 +3,20 @@ import querystring from 'querystring';
 import url from 'url';
 import idle from '@paulcbetts/system-idle-time';
 
+import './background/aboutDialog';
 import appData from './background/appData';
-import autoUpdate from './background/autoUpdate';
 import certificate from './background/certificate';
 import dock from './background/dock';
 import { addServer, getMainWindow } from './background/mainWindow';
 import menus from './background/menus';
 import './background/notifications';
-import './background/screenshare';
+import './background/screenshareDialog';
 import tray from './background/tray';
+import './background/updateDialog';
+import './background/updates';
 
 import i18n from './i18n/index.js';
 
-export { default as showAboutDialog } from './background/aboutDialog';
 export { default as remoteServers } from './background/servers';
 export { certificate, dock, menus, tray };
 
@@ -53,15 +54,6 @@ const parseProtocolUrls = (args) =>
 const addServers = (protocolUrls) => parseProtocolUrls(protocolUrls)
 	.forEach((serverUrl) => addServer(serverUrl));
 
-const isSecondInstance = app.makeSingleInstance(async(argv) => {
-	(await getMainWindow()).show();
-	addServers(argv.slice(2));
-});
-
-if (isSecondInstance && !process.mas) {
-	app.quit();
-}
-
 // macOS only
 app.on('open-url', (event, url) => {
 	event.preventDefault();
@@ -81,19 +73,31 @@ if (process.platform === 'linux') {
 	app.disableHardwareAcceleration();
 }
 
-app.on('ready', async() => {
-	unsetDefaultApplicationMenu();
-
-	appData.initialize();
-
-	const mainWindow = await getMainWindow();
-	certificate.initWindow(mainWindow);
-
-	autoUpdate();
-});
-
 ipcMain.on('getSystemIdleTime', (event) => {
 	event.returnValue = idle.getIdleTime();
 });
 
 process.on('unhandledRejection', console.error.bind(console));
+
+
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (gotTheLock) {
+	app.on('second-instance', async(event, argv) => {
+		(await getMainWindow()).show();
+		addServers(argv.slice(2));
+	});
+
+	app.on('ready', async() => {
+		unsetDefaultApplicationMenu();
+
+		appData.initialize();
+
+		const mainWindow = await getMainWindow();
+		certificate.initWindow(mainWindow);
+
+		ipcMain.emit('check-for-updates');
+	});
+} else {
+	app.quit();
+}
